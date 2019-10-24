@@ -1,0 +1,100 @@
+######################################################
+### QUESTION ###
+######################################################
+# Which outpatient hospitals in England had the longest #
+# and shortest patient waiting times in March 2010? #
+
+## HOUSEKEEPING ##
+# Clear the workspace #
+rm(list=ls())
+
+# Set the working directory #
+setwd("C:/...")
+
+######################################################
+## LOADING DATA ##
+######################################################
+# Hospital Waiting Time downloaded data from Gov.uk #
+# Availabe from: https://data.gov.uk/dataset/a1dc3c32-0294-4ed1-988c-cc90e97ae4c9/hospital-waiting-times #
+
+# Loading the comma-seperated values file #
+HWT <- read.csv("Waiting_Times.csv", header = TRUE)
+
+######################################################
+## GETTING TO KNOW THE DATA ##
+######################################################
+# Columns names #
+names(HWT)
+
+# Viewing the structure #
+str(HWT)
+
+# Making sure it is classed as a data frame #
+class(HWT)
+
+# Viewing top 6 rows #
+head(HWT)
+
+# Viewing bottom 6 rows #
+tail(HWT)
+
+# Counting the number of columns #
+ncol(HWT)
+
+# Counting the number of rows #
+nrow(HWT)
+
+######################################################
+## TIDYING DATA ##
+######################################################
+# Load the dplyr package to tidy the data #
+library(dplyr)
+
+# Adding the number ot patients together into a new column for the total number of patients waiting #
+# Subsetting the two collumns #
+# Arranging by the total number of patients waiting (highest to lowest) #
+HWT <- HWT%>%mutate(
+  Total_Waiting = X2..01.weeks + X3..02.weeks + X4..03.weeks + 
+X5..04.weeks + X6..05.weeks + X7..06.weeks + X8..07.weeks + X9..08.weeks + X10..09.weeks + 
+X11..10.weeks + X12..11.weeks + X13..12.weeks + X14..13.weeks + X15..14.weeks + X16..15.weeks + 
+X17..16.weeks + X18..17.weeks + X17..weeks
+)%>%select(ENGLAND, Total_Waiting
+           )%>%arrange(desc(Total_Waiting))
+
+######################################################
+## SPREAD OF DATA ##
+######################################################
+# Min and max vales #
+range(HWT$Total_Waiting)
+
+# Hospital with the longest outpatient waiting time #
+head(HWT, n=1)
+# Hospital with the shortest outpatient waiting time #
+tail(HWT, n=1)
+
+# Subsetting the top and bottom rows for visualisation #
+hldata <- slice(HWT, 1,152 )
+
+# Saving new dataset #
+write.csv(hldata, "Final_Waiting_Totals.csv")
+
+######################################################
+## VISUALINGING DATA ##
+######################################################
+# load ggplot2 #
+library(ggplot2)
+
+# Crearing a boxplot with ggplot layers #
+pwt <- ggplot(hldata, aes(x = hldata$ENGLAND, y = hldata$Total_Waiting, fill = hldata$ENGLAND)) +
+  geom_bar(stat="identity") + 
+  theme_classic() + 
+  scale_fill_brewer(palette="Dark2") + 
+  labs( y ="Total Number of Patients Waiting ",
+        x = "Location",
+        title = "Hospital Outpatients") +
+  theme(legend.position = "none")
+
+# Viewing the completed boxplot #
+pwt
+
+######################################################
